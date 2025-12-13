@@ -11,6 +11,7 @@ env/
 .ipynb_checkpoints/
 *.png
 *.jpg
+*.gif
 *.jpeg
 *.csv
 results/
