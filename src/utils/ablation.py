@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import torch
-from src.environment import LoadBalancerEnv
-from src.agents import DQNAgent
+from environment import LoadBalancerEnv
+from agents import DQNAgent
 
 def set_seed(seed=42):
     np.random.seed(seed)
