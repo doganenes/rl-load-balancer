@@ -45,13 +45,13 @@ def run_stress_test():
     rr_agent = RoundRobinAgent(num_servers=3)
     
     print("------------------------------------------------")
-    print("STRESS TEST (Avg + Std + P99)")
+    print("STRESS TEST RESULTS")
     print("------------------------------------------------")
     
-    model_path = "dqn_load_balancer.pth"
+    model_path = os.path.join("models", "dqn_load_balancer.pth")
     
     if os.path.exists(model_path):
-        print(f"📥 Loading pre-trained model: {model_path}")
+        print(f"Loading pre-trained model: {model_path}")
         # Load weights
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         dqn_agent.policy_net.load_state_dict(torch.load(model_path, map_location=device))
@@ -59,9 +59,9 @@ def run_stress_test():
         
         # Turn off exploration completely
         dqn_agent.epsilon = 0.0 
-        print("✅ Model loaded successfully. Ready to test.")
+        print("Model loaded successfully. Ready to test.")
     else:
-        print("⚠️ WARNING: Model file not found! Testing with a RANDOM agent.")
+        print("Error: Model file not found! Testing with a RANDOM agent.")
         print("   (Please run main.py first to train the agent)")
 
     print("\nStarting Comprehensive Tests...\n")
@@ -84,7 +84,6 @@ def run_stress_test():
     print(f"DQN -> Avg: {dqn_h_avg:.3f} | Std: {dqn_h_std:.3f} | P99: {dqn_h_p99:.3f}")
     print(f"RR  -> Avg: {rr_h_avg:.3f} | Std: {rr_h_std:.3f} | P99: {rr_h_p99:.3f}")
 
-    # --- PLOTTING ---
     labels = ['Low Traffic', 'High Traffic']
     x = np.arange(len(labels))
     width = 0.35
@@ -114,7 +113,7 @@ def run_stress_test():
     ax2.bar(x - width/2, dqn_stds, width, label='DQN', color='royalblue', hatch='//')
     ax2.bar(x + width/2, rr_stds, width, label='Round Robin', color='orange', hatch='//')
     ax2.set_title('2. Fairness / Balance\n(Standard Deviation)', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('Std Dev (Lower is Better)')
+    ax2.set_ylabel('Standard Deviation')
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels)
     ax2.legend()

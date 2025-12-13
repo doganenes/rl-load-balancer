@@ -4,7 +4,7 @@ import os
 import torch
 from src.environment import LoadBalancerEnv
 from src.agents import DQNAgent
-
+    
 def set_seed(seed=42):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -18,6 +18,7 @@ def run_experiment(use_dueling, label, color, lr, episodes=400):
     
     agent = DQNAgent(state_dim=3, action_dim=3, lr=lr, gamma=0.9, use_dueling=use_dueling)
     agent.batch_size = 256
+    
     
     rewards = []
     
@@ -37,6 +38,8 @@ def run_experiment(use_dueling, label, color, lr, episodes=400):
             
         agent.update_epsilon()
         rewards.append(total_reward)
+        if e % 50 == 0:
+            print(f"{label} | Episode {e}")
 
     window = 15
     if len(rewards) >= window:
@@ -46,9 +49,7 @@ def run_experiment(use_dueling, label, color, lr, episodes=400):
     return smoothed_rewards
 
 def run_ablation_study():
-    print("------------------------------------------------")
-    print("ABLATION STUDY: Standard DQN vs Dueling DQN")
-    print("------------------------------------------------")
+    
     
     std_rewards = run_experiment(use_dueling=False, label="Standard DQN", color="blue", lr=0.0001)
     duel_rewards = run_experiment(use_dueling=True, label="Dueling DQN", color="red", lr=0.0001)
@@ -58,15 +59,15 @@ def run_ablation_study():
 
     plt.figure(figsize=(10, 6))
     plt.plot(std_rewards, label='Standard DQN', color='blue', alpha=0.6, linestyle='--')
-    plt.plot(duel_rewards, label='Dueling DQN (Advanced)', color='red', linewidth=2.5)
+    plt.plot(duel_rewards, label='Dueling DQN', color='red', linewidth=2.5)
     
     plt.title('Ablation Study: Architecture Impact\n(Standard vs Dueling DQN)')
     plt.xlabel('Episode')
-    plt.ylabel('Smoothed Reward (Higher is Better)')
+    plt.ylabel('Reward')
     plt.legend()
     plt.grid(True, alpha=0.3)
     
-    filename = 'ablation_final_fixed.png'
+    filename = 'ablation_line.png'
     save_path = os.path.join("figures", filename)
     plt.savefig(save_path)
     
@@ -74,4 +75,7 @@ def run_ablation_study():
     plt.show()
 
 if __name__ == "__main__":
+    print("------------------------------------------------")
+    print("ABLATION STUDY: Standard DQN vs Dueling DQN")
+    print("------------------------------------------------")
     run_ablation_study()

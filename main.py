@@ -9,7 +9,7 @@ def train():
     env = LoadBalancerEnv(num_servers=3)
     agent = DQNAgent(state_dim=3, action_dim=3)
     
-    episodes = 500  
+    episodes =400  
     rewards_history = []
     
     print("DQN Main Training Starting...")
@@ -41,8 +41,8 @@ def train():
     print("Training Completed!")
 
     if not os.path.exists("figures"):
-        os.makedirs("figures")
-        print("'figures' folder created.")
+            os.makedirs("figures")
+            print("'figures' folder created.")
 
     # Save the plot
     plot_path = os.path.join("figures", "training_curve.png")

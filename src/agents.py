@@ -76,7 +76,7 @@ class DQNAgent:
         self.use_dueling = use_dueling
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Agent Initialized! Model: {'Dueling' if use_dueling else 'Standard'}")
+        print(f"Agent Initialized! Model: {'Dueling DQN' if use_dueling else 'Standard DQN'}")
         
         if self.use_dueling:
             self.policy_net = DuelingDQN(state_dim, action_dim).to(self.device)
