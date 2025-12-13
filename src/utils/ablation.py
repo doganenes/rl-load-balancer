@@ -61,7 +61,7 @@ def run_ablation_study():
     plt.plot(std_rewards, label='Standard DQN', color='blue', alpha=0.6, linestyle='--')
     plt.plot(duel_rewards, label='Dueling DQN', color='red', linewidth=2.5)
     
-    plt.title('Ablation Study: Architecture Impact\n(Standard vs Dueling DQN)')
+    plt.title('Ablation Study\n(Standard vs Dueling DQN)')
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.legend()

@@ -135,7 +135,7 @@ def run_stress_test():
         os.makedirs("figures")
         print("'figures' folder created.")
 
-    save_path = os.path.join("figures", "ultimate_stress_test.png")
+    save_path = os.path.join("figures", "stress_test_results.png")
     plt.savefig(save_path)
     print(f"\nComprehensive Chart saved: {save_path}")
     plt.show()
