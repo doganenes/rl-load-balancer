@@ -40,7 +40,7 @@ def run_trial(lr, gamma, use_dueling, episodes=100):
     avg_score = np.mean(rewards[-20:])
     return avg_score
 
-#Tries different combinations sequentially (Grid Search).
+#Try different combinations sequentially.
 def grid_search():
     learning_rates = [0.001, 0.0001]
     gammas = [0.99, 0.95]

@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import torch
-from environment import LoadBalancerEnv
-from agents import DQNAgent
+from src.environment import LoadBalancerEnv
+from src.agents import DQNAgent
 
 def set_seed(seed=42):
     np.random.seed(seed)
@@ -12,7 +12,7 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
 
 def run_experiment(use_dueling, label, color, lr, episodes=400):
-    print(f"Experiment: {label} (LR: {lr}, Soft Update)...")
+    print(f"Experiment: {label}")
     set_seed(42)
     env = LoadBalancerEnv(num_servers=3)
     

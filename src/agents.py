@@ -76,7 +76,7 @@ class DQNAgent:
         self.use_dueling = use_dueling
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Agent Initialized! Model: {'Dueling' if use_dueling else 'Standard'} | Device: {self.device}")
+        print(f"Agent Initialized! Model: {'Dueling' if use_dueling else 'Standard'}")
         
         if self.use_dueling:
             self.policy_net = DuelingDQN(state_dim, action_dim).to(self.device)
@@ -148,3 +148,13 @@ class DQNAgent:
     
     def update_epsilon(self):
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+
+class RoundRobinAgent:
+    def __init__(self, num_servers=3):
+        self.num_servers = num_servers
+        self.current_index = 0
+
+    def select_action(self, state):
+        action = self.current_index
+        self.current_index = (self.current_index + 1) % self.num_servers
+        return action

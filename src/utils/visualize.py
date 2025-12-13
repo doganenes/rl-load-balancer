@@ -25,7 +25,7 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
         
         fig, ax = plt.subplots(figsize=(6, 4))
         
-        servers = ['Srv 1', 'Srv 2', 'Srv 3']
+        servers = ['Server 1', 'Server 2', 'Server 3']
         loads = state
         
         colors = []
@@ -42,8 +42,8 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
         ax.set_ylim(0, 1.25)
         ax.axhline(y=1.0, color='red', linestyle='--', linewidth=1.5, label='Max Capacity')
         
-        mode_title = "LOW TRAFFIC (Calm)" if traffic_mode == 'low' else "HIGH TRAFFIC (Stress)"
-        ax.set_title(f'{mode_title}\nStep: {step+1}/{steps} | Action: Sent to Srv {action+1}', fontsize=10)
+        mode_title = "LOW TRAFFIC" if traffic_mode == 'low' else "HIGH TRAFFIC"
+        ax.set_title(f'{mode_title}\nStep: {step+1}/{steps} | Action: Sent to Server {action+1}', fontsize=10)
         ax.set_ylabel('CPU Load (%)')
         ax.legend(loc='upper right', fontsize=8)
         ax.grid(axis='y', linestyle=':', alpha=0.5)
