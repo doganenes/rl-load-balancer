@@ -12,8 +12,11 @@ class LoadBalancerEnv(gym.Env):
     def __init__(self, num_servers=3):
         super(LoadBalancerEnv, self).__init__()
         self.num_servers = num_servers
+        
         self.observation_space = spaces.Box(low=0, high=10, shape=(num_servers,), dtype=np.float32)
-        self.action_space = spaces.Discrete(num_servers) 
+        
+        self.action_space = spaces.Discrete(num_servers)
+        
         self.state = np.zeros(num_servers)
         
         self.processing_rate = 0.1
@@ -51,9 +54,9 @@ class LoadBalancerEnv(gym.Env):
         
         self.state[action] += current_request_size
 
-        avg_load = np.mean(self.state)       
-        std_dev = np.std(self.state)         
-        max_load = np.max(self.state)        
+        avg_load = np.mean(self.state)      
+        std_dev = np.std(self.state)        
+        max_load = np.max(self.state)       
 
         w_perf = 1.0   
         w_fair = 2.5   
