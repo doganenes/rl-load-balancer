@@ -7,9 +7,16 @@ from src.utils.plot import plot_learning_curve
 
 def train():
     env = LoadBalancerEnv(num_servers=3)
-    agent = DQNAgent(state_dim=3, action_dim=3)
     
-    episodes =400  
+    agent = DQNAgent(
+        state_dim=3, 
+        action_dim=3, 
+        lr=0.0001, 
+        gamma=0.95, 
+        use_dueling=True
+    )
+    
+    episodes = 400  
     rewards_history = []
     
     print("DQN Main Training Starting...")
@@ -44,13 +51,21 @@ def train():
             os.makedirs("figures")
             print("'figures' folder created.")
 
-    # Save the plot
     plot_path = os.path.join("figures", "training_curve.png")
     plot_learning_curve(rewards_history, filename=plot_path)
     print(f"Training plot saved: {plot_path}")
 
-    torch.save(agent.policy_net.state_dict(), "dqn_load_balancer.pth")
-    print("Model saved: dqn_load_balancer.pth")
+    if not os.path.exists("models"):
+        os.makedirs("models")
+        print("'models' folder created.")
+    
+    model_save_path = os.path.join("models", "dqn_load_balancer.pth")
+    
+    if os.path.exists(model_save_path):
+        os.remove(model_save_path)
+     
+    torch.save(agent.policy_net.state_dict(), model_save_path)
+    print(f"Model saved correctly to: {model_save_path}")
 
 if __name__ == "__main__":
     train()

@@ -3,14 +3,11 @@ import matplotlib.pyplot as plt
 import os 
 import torch  
 from src.environment import LoadBalancerEnv
-from src.agents import DQNAgent, RoundRobinAgent
+from src.agents import DQNAgent, RoundRobinAgent, LeastConnectionsAgent
 
 def evaluate(agent, env, episodes=50):
     """
-    Tests the agent and returns 3 Critical Metrics:
-    1. Average Load: General system health.
-    2. Std Deviation: Fairness/Balance across servers.
-    3. P99 Latency: The worst-case experience (Tail Latency).
+    Tests the agent and returns 3 Critical Metrics.
     """
     all_avg_loads = []
     all_std_devs = [] 
@@ -39,105 +36,121 @@ def evaluate(agent, env, episodes=50):
 
 def run_stress_test():
     env = LoadBalancerEnv(num_servers=3)
+
+    dqn_agent = DQNAgent(state_dim=3, action_dim=3, use_dueling=True) 
     
-    # Initialize Agents
-    dqn_agent = DQNAgent(state_dim=3, action_dim=3)
+    lc_agent = LeastConnectionsAgent()  
     rr_agent = RoundRobinAgent(num_servers=3)
     
     print("------------------------------------------------")
-    print("STRESS TEST RESULTS")
+    print("STRESS TEST RESULTS (DQN vs Least Connection vs Round Robin)")
     print("------------------------------------------------")
     
+    # --- 2. LOAD DQN MODEL ---
     model_path = os.path.join("models", "dqn_load_balancer.pth")
     
     if os.path.exists(model_path):
         print(f"Loading pre-trained model: {model_path}")
-        # Load weights
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        dqn_agent.policy_net.load_state_dict(torch.load(model_path, map_location=device))
-        dqn_agent.policy_net.eval() # Set to evaluation mode
         
-        # Turn off exploration completely
+        dqn_agent.policy_net.load_state_dict(torch.load(model_path, map_location=device))
+        
+        dqn_agent.policy_net.eval() 
         dqn_agent.epsilon = 0.0 
         print("Model loaded successfully. Ready to test.")
     else:
-        print("Error: Model file not found! Testing with a RANDOM agent.")
-        print("   (Please run main.py first to train the agent)")
+        print("Error: Model file not found! (Please run src.main first)")
+        return 
 
     print("\nStarting Comprehensive Tests...\n")
 
-    # --- LOW TRAFFIC TEST ---
+    # --- 3. LOW TRAFFIC TEST ---
     env.set_traffic_mode('low')
+    print("🔹 Testing Low Traffic...")
     dqn_l_avg, dqn_l_std, dqn_l_p99 = evaluate(dqn_agent, env)
+    lc_l_avg, lc_l_std, lc_l_p99 = evaluate(lc_agent, env) 
     rr_l_avg, rr_l_std, rr_l_p99 = evaluate(rr_agent, env)
     
-    print(f"🔹 Low Traffic Results:")
-    print(f"   DQN -> Avg: {dqn_l_avg:.3f} | Std: {dqn_l_std:.3f} | P99: {dqn_l_p99:.3f}")
-    print(f"   RR  -> Avg: {rr_l_avg:.3f} | Std: {rr_l_std:.3f} | P99: {rr_l_p99:.3f}")
+    print(f"   DQN        -> Avg: {dqn_l_avg:.3f} | Std: {dqn_l_std:.3f}")
+    print(f"   Least Conn -> Avg: {lc_l_avg:.3f} | Std: {lc_l_std:.3f}")
+    print(f"   RR         -> Avg: {rr_l_avg:.3f} | Std: {rr_l_std:.3f}")
 
-    # --- HIGH TRAFFIC TEST ---
+    # --- 4. HIGH TRAFFIC TEST ---
     env.set_traffic_mode('high')
+    print("\nTesting High Traffic...")
     dqn_h_avg, dqn_h_std, dqn_h_p99 = evaluate(dqn_agent, env)
+    lc_h_avg, lc_h_std, lc_h_p99 = evaluate(lc_agent, env) 
     rr_h_avg, rr_h_std, rr_h_p99 = evaluate(rr_agent, env)
 
-    print(f"\nHigh Traffic Results:")
-    print(f"DQN -> Avg: {dqn_h_avg:.3f} | Std: {dqn_h_std:.3f} | P99: {dqn_h_p99:.3f}")
-    print(f"RR  -> Avg: {rr_h_avg:.3f} | Std: {rr_h_std:.3f} | P99: {rr_h_p99:.3f}")
+    print(f"   DQN        -> Avg: {dqn_h_avg:.3f} | Std: {dqn_h_std:.3f}")
+    print(f"   Least Conn -> Avg: {lc_h_avg:.3f} | Std: {lc_h_std:.3f}")
+    print(f"   RR         -> Avg: {rr_h_avg:.3f} | Std: {rr_h_std:.3f}")
 
+    # --- 5. PLOTTING RESULTS (3 BARS) ---
     labels = ['Low Traffic', 'High Traffic']
     x = np.arange(len(labels))
-    width = 0.35
+    width = 0.25  
 
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
 
     dqn_avgs = [dqn_l_avg, dqn_h_avg]
+    lc_avgs  = [lc_l_avg, lc_h_avg]
     rr_avgs  = [rr_l_avg, rr_h_avg]
     
     dqn_stds = [dqn_l_std, dqn_h_std]
+    lc_stds  = [lc_l_std, lc_h_std]
     rr_stds  = [rr_l_std, rr_h_std]
     
     dqn_p99s = [dqn_l_p99, dqn_h_p99]
+    lc_p99s  = [lc_l_p99, lc_h_p99]
     rr_p99s  = [rr_l_p99, rr_h_p99]
 
+    c_dqn = 'royalblue'
+    c_lc = 'forestgreen'
+    c_rr = 'orange'
+
     # --- CHART 1: AVERAGE LOAD ---
-    ax1.bar(x - width/2, dqn_avgs, width, label='DQN', color='royalblue')
-    ax1.bar(x + width/2, rr_avgs, width, label='Round Robin', color='orange')
+    ax1.bar(x - width, dqn_avgs, width, label='DQN (Proposed)', color=c_dqn)
+    ax1.bar(x, lc_avgs, width, label='Least Connections', color=c_lc)
+    ax1.bar(x + width, rr_avgs, width, label='Round Robin', color=c_rr)
+    
     ax1.set_title('1. General Performance\n(Average Load)', fontsize=11, fontweight='bold')
-    ax1.set_ylabel('Avg Load')
+    ax1.set_ylabel('Average Load')
     ax1.set_xticks(x)
     ax1.set_xticklabels(labels)
     ax1.legend()
     ax1.grid(True, axis='y', alpha=0.3)
 
-    # --- CHART 2: STANDARD DEVIATION (BALANCE) ---
-    ax2.bar(x - width/2, dqn_stds, width, label='DQN', color='royalblue', hatch='//')
-    ax2.bar(x + width/2, rr_stds, width, label='Round Robin', color='orange', hatch='//')
+    # --- CHART 2: STANDARD DEVIATION ---
+    ax2.bar(x - width, dqn_stds, width, label='DQN', color=c_dqn, hatch='//')
+    ax2.bar(x, lc_stds, width, label='Least Conn', color=c_lc, hatch='//')
+    ax2.bar(x + width, rr_stds, width, label='Round Robin', color=c_rr, hatch='//')
+    
     ax2.set_title('2. Fairness / Balance\n(Standard Deviation)', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('Standard Deviation')
+    ax2.set_ylabel('Std Dev')
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels)
-    ax2.legend()
     ax2.grid(True, axis='y', alpha=0.3)
     
     # --- CHART 3: P99 LATENCY ---
-    ax3.bar(x - width/2, dqn_p99s, width, label='DQN', color='royalblue', hatch='..')
-    ax3.bar(x + width/2, rr_p99s, width, label='Round Robin', color='orange', hatch='..')
+    ax3.bar(x - width, dqn_p99s, width, label='DQN', color=c_dqn, hatch='..')
+    ax3.bar(x, lc_p99s, width, label='Least Conn', color=c_lc, hatch='..')
+    ax3.bar(x + width, rr_p99s, width, label='Round Robin', color=c_rr, hatch='..')
+    
     ax3.set_title('3. Worst Case Experience\n(P99 Latency)', fontsize=11, fontweight='bold')
     ax3.set_ylabel('P99 Load')
     ax3.set_xticks(x)
     ax3.set_xticklabels(labels)
-    ax3.legend()
     ax3.grid(True, axis='y', alpha=0.3)
 
     plt.tight_layout()
 
     if not os.path.exists("figures"):
         os.makedirs("figures")
-        print("'figures' folder created.")
 
     save_path = os.path.join("figures", "stress_test_results.png")
     plt.savefig(save_path)
-    print(f"\nComprehensive Chart saved: {save_path}")
+    print(f"\nAgent Comparison Chart saved: {save_path}")
     plt.show()
 
 if __name__ == "__main__":

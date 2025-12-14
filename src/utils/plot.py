@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Standard single training plot (Required for Main.py).
 def plot_learning_curve(rewards, filename='training_curve.png'):
     plt.figure(figsize=(10, 5))
     plt.plot(rewards, label='DQN Rewards')
@@ -35,7 +34,6 @@ def plot_learning_curve_with_shadow(all_rewards, filename='academic_training_cur
     plt.close()
     print(f"Chart saved: {filename}")
 
-#DQN vs Round Robin comparison bar chart.
 def plot_comparison(dqn_metrics, rr_metrics, filename='comparison_result.png'):
     labels = ['Avg Response Time', 'Throughput']
     dqn_vals = [dqn_metrics['avg_response'], dqn_metrics['throughput']]

@@ -70,7 +70,7 @@ class DuelingDQN(nn.Module):
         return q_values
 
 class DQNAgent:
-    def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, use_dueling=False):
+    def __init__(self, state_dim, action_dim, lr=0.0001, gamma=0.95, use_dueling=True):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.use_dueling = use_dueling
@@ -96,7 +96,7 @@ class DQNAgent:
         # Epsilon Settings
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.985
 
     def select_action(self, state):
         if random.random() < self.epsilon:
@@ -158,3 +158,11 @@ class RoundRobinAgent:
         action = self.current_index
         self.current_index = (self.current_index + 1) % self.num_servers
         return action
+
+
+class LeastConnectionsAgent:
+    def __init__(self):
+        pass
+
+    def select_action(self, state):
+        return np.argmin(state)
