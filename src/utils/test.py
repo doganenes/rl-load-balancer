@@ -36,15 +36,9 @@ def evaluate(agent, env, episodes=50):
 
 def run_stress_test():
     env = LoadBalancerEnv(num_servers=3)
-
-    dqn_agent = DQNAgent(state_dim=3, action_dim=3, use_dueling=True) 
-    
+    dqn_agent = DQNAgent(state_dim=3, action_dim=3, use_dueling=True)
     lc_agent = LeastConnectionsAgent()  
     rr_agent = RoundRobinAgent(num_servers=3)
-    
-    print("------------------------------------------------")
-    print("STRESS TEST RESULTS (DQN vs Least Connection vs Round Robin)")
-    print("------------------------------------------------")
     
     # --- 2. LOAD DQN MODEL ---
     model_path = os.path.join("models", "dqn_load_balancer.pth")

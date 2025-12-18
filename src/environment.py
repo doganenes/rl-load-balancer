@@ -4,7 +4,7 @@ import numpy as np
 
 class LoadBalancerEnv(gym.Env):
     """
-    Realistic Load Balancer Simulation Environment
+    Load Balancer Environment.
     - Allows overload (Load > 1.0) to simulate crashes/failures.
     - Risk-aware reward function.
     - Gymnasium compliant (terminated/truncated logic).
@@ -25,22 +25,22 @@ class LoadBalancerEnv(gym.Env):
 
     def set_traffic_mode(self, mode):
         """
-        Modifies traffic intensity for test scenarios.
+        Traffic intensity for test scenarios.
         """
         if mode == 'low':
-            self.min_req_size = 0.05
-            self.max_req_size = 0.15
-            self.processing_rate = 0.08
+            self.min_req_size = 0.20  
+            self.max_req_size = 0.40  
+            self.processing_rate = 0.10
             
         elif mode == 'high':
             self.min_req_size = 0.20  
-            self.max_req_size = 0.40  
+            self.max_req_size = 0.45  
             self.processing_rate = 0.10
             
         else:
             self.min_req_size = 0.10
             self.max_req_size = 0.20
-            self.processing_rate = 0.1
+            self.processing_rate = 0.10
 
     def reset(self, seed=None):
         super().reset(seed=seed)

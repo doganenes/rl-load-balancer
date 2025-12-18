@@ -9,7 +9,6 @@ def run_trial(lr, gamma, use_dueling, episodes=100):
     and returns the average reward of the last 20 episodes.
     """
     env = LoadBalancerEnv(num_servers=3)
-    
     agent = DQNAgent(state_dim=3, action_dim=3, lr=lr, gamma=gamma, use_dueling=use_dueling) 
     rewards = []
     
@@ -66,7 +65,7 @@ def grid_search():
                         'use_dueling': use_dueling
                     }
 
-    print("BEST RESULT FOUND!")
+    print("BEST RESULTS")
     print(f"Score: {best_score:.2f}")
     print(f"Parameters: {best_params}")
 

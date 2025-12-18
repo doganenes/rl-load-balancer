@@ -7,16 +7,15 @@ from src.utils.plot import plot_learning_curve
 
 def train():
     env = LoadBalancerEnv(num_servers=3)
-    
     agent = DQNAgent(
-        state_dim=3, 
+        state_dim=3,
         action_dim=3, 
         lr=0.0001, 
         gamma=0.95, 
         use_dueling=True
     )
     
-    episodes = 400  
+    episodes = 800  
     rewards_history = []
     
     print("DQN Main Training Starting...")

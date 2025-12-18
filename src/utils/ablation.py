@@ -75,7 +75,4 @@ def run_ablation_study():
     plt.show()
 
 if __name__ == "__main__":
-    print("------------------------------------------------")
-    print("ABLATION STUDY: Standard DQN vs Dueling DQN")
-    print("------------------------------------------------")
     run_ablation_study()
