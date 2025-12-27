@@ -40,8 +40,7 @@ def run_stress_test():
     lc_agent = LeastConnectionsAgent()  
     rr_agent = RoundRobinAgent(num_servers=3)
     
-    # --- 2. LOAD DQN MODEL ---
-    model_path = os.path.join("models", "dqn_load_balancer.pth")
+    model_path = "dqn_load_balancer_6.pth"
     
     if os.path.exists(model_path):
         print(f"Loading pre-trained model: {model_path}")
@@ -58,9 +57,8 @@ def run_stress_test():
 
     print("\nStarting Comprehensive Tests...\n")
 
-    # --- 3. LOW TRAFFIC TEST ---
     env.set_traffic_mode('low')
-    print("🔹 Testing Low Traffic...")
+    print("Testing Low Traffic...")
     dqn_l_avg, dqn_l_std, dqn_l_p99 = evaluate(dqn_agent, env)
     lc_l_avg, lc_l_std, lc_l_p99 = evaluate(lc_agent, env) 
     rr_l_avg, rr_l_std, rr_l_p99 = evaluate(rr_agent, env)
@@ -69,7 +67,6 @@ def run_stress_test():
     print(f"   Least Conn -> Avg: {lc_l_avg:.3f} | Std: {lc_l_std:.3f}")
     print(f"   RR         -> Avg: {rr_l_avg:.3f} | Std: {rr_l_std:.3f}")
 
-    # --- 4. HIGH TRAFFIC TEST ---
     env.set_traffic_mode('high')
     print("\nTesting High Traffic...")
     dqn_h_avg, dqn_h_std, dqn_h_p99 = evaluate(dqn_agent, env)
@@ -80,7 +77,6 @@ def run_stress_test():
     print(f"   Least Conn -> Avg: {lc_h_avg:.3f} | Std: {lc_h_std:.3f}")
     print(f"   RR         -> Avg: {rr_h_avg:.3f} | Std: {rr_h_std:.3f}")
 
-    # --- 5. PLOTTING RESULTS (3 BARS) ---
     labels = ['Low Traffic', 'High Traffic']
     x = np.arange(len(labels))
     width = 0.25  
@@ -103,7 +99,7 @@ def run_stress_test():
     c_lc = 'forestgreen'
     c_rr = 'orange'
 
-    # --- CHART 1: AVERAGE LOAD ---
+    # --- Chart 1: AVERAGE LOAD ---
     ax1.bar(x - width, dqn_avgs, width, label='DQN (Proposed)', color=c_dqn)
     ax1.bar(x, lc_avgs, width, label='Least Connections', color=c_lc)
     ax1.bar(x + width, rr_avgs, width, label='Round Robin', color=c_rr)
@@ -115,7 +111,7 @@ def run_stress_test():
     ax1.legend()
     ax1.grid(True, axis='y', alpha=0.3)
 
-    # --- CHART 2: STANDARD DEVIATION ---
+    # --- Chart 2: STANDARD DEVIATION ---
     ax2.bar(x - width, dqn_stds, width, label='DQN', color=c_dqn, hatch='//')
     ax2.bar(x, lc_stds, width, label='Least Conn', color=c_lc, hatch='//')
     ax2.bar(x + width, rr_stds, width, label='Round Robin', color=c_rr, hatch='//')
@@ -126,7 +122,7 @@ def run_stress_test():
     ax2.set_xticklabels(labels)
     ax2.grid(True, axis='y', alpha=0.3)
     
-    # --- CHART 3: P99 LATENCY ---
+    # --- Chart 3: P99 LATENCY ---
     ax3.bar(x - width, dqn_p99s, width, label='DQN', color=c_dqn, hatch='..')
     ax3.bar(x, lc_p99s, width, label='Least Conn', color=c_lc, hatch='..')
     ax3.bar(x + width, rr_p99s, width, label='Round Robin', color=c_rr, hatch='..')
@@ -144,7 +140,7 @@ def run_stress_test():
 
     save_path = os.path.join("figures", "stress_test_results.png")
     plt.savefig(save_path)
-    print(f"\nAgent Comparison Chart saved: {save_path}")
+    print(f"\nComparison Chart saved: {save_path}")
     plt.show()
 
 if __name__ == "__main__":
