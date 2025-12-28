@@ -96,7 +96,7 @@ class DQNAgent:
         # Epsilon Settings
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.985
+        self.epsilon_decay = 0.995
 
     def select_action(self, state):
         if random.random() < self.epsilon:
