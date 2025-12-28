@@ -20,3 +20,4 @@ results/
 *.pkl
 .DS_Store
 Thumbs.db
+logs/
