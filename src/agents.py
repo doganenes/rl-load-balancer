@@ -5,8 +5,9 @@ import torch.optim as optim
 import random
 from collections import deque
 
-# --- REPLAY BUFFER ---
+
 class ReplayBuffer:
+    """Stores and samples past transitions for training stability."""
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
     
@@ -23,8 +24,8 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.buffer)
 
-# STANDARD DQN
 class DQN(nn.Module):
+    """Standard DQN architecture."""
     def __init__(self, input_dim, output_dim):
         super(DQN, self).__init__()
         self.fc = nn.Sequential(
@@ -38,8 +39,8 @@ class DQN(nn.Module):
     def forward(self, x):
         return self.fc(x)
 
-# DUELING DQN
 class DuelingDQN(nn.Module):
+    """Dueling DQN with separate value and advantage streams."""
     def __init__(self, input_dim, output_dim):
         super(DuelingDQN, self).__init__()
         
@@ -70,6 +71,10 @@ class DuelingDQN(nn.Module):
         return q_values
 
 class DQNAgent:
+    """
+    DQN-based agent supporting Standard and Dueling architectures,
+    with optional target network and replay memory.
+    """    
     def __init__(self, state_dim, action_dim, lr=0.0001, gamma=0.95, 
                  use_dueling=True, use_target_network=True, use_replay_memory=True):
         self.state_dim = state_dim
@@ -116,6 +121,7 @@ class DQNAgent:
         self.epsilon_decay = 0.995
 
     def select_action(self, state):
+        """Epsilon-greedy action selection."""
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         else:
@@ -126,6 +132,7 @@ class DQNAgent:
                 return q_values.argmax().item()
 
     def learn(self):
+        """Updates network parameters using sampled experiences."""
         if not self.use_replay_memory or (self.use_replay_memory and len(self.memory) < self.batch_size):
             return
         
@@ -166,6 +173,7 @@ class DQNAgent:
             self.update_target_network()
 
     def update_target_network(self):
+        """Soft update of target network"""
         tau = 0.005
         target_state_dict = self.target_net.state_dict()
         policy_state_dict = self.policy_net.state_dict()
@@ -174,9 +182,11 @@ class DQNAgent:
         self.target_net.load_state_dict(target_state_dict)
     
     def update_epsilon(self):
+        """Decay epsilon after each episode."""
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
     
     def store_transition(self, state, action, reward, next_state, done):
+        """Stores transition in replay memory or keeps last transition."""
         if self.use_replay_memory:
             self.memory.push(state, action, reward, next_state, done)
         else:
@@ -185,6 +195,7 @@ class DQNAgent:
             self.last_transition = (state, action, reward, next_state, done)
 
 class RoundRobinAgent:
+    """Round Robin Agent for Load Balancing."""
     def __init__(self, num_servers=3):
         self.num_servers = num_servers
         self.current_index = 0
@@ -196,6 +207,7 @@ class RoundRobinAgent:
 
 
 class LeastConnectionsAgent:
+    """Baseline selecting the least loaded server."""
     def __init__(self):
         pass
 

@@ -2,7 +2,13 @@ import pandas as pd
 import numpy as np
 import os
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
+"""
+Compares simulation server load vectors with benchmark data
+using Euclidean distance and similarity percentage metrics.
+Outputs a step-wise comparison CSV file.
+"""
+
+base_dir = os.path.dirname(os.path.abspath(__file__)) 
 simulation_log_path = os.path.join(base_dir, "csv", "simulation_log.csv")
 benchmark_path = os.path.join(base_dir, "csv", "mendeley_data.csv")
 output_path = os.path.join(base_dir, "csv", "benchmark_comparison.csv")
