@@ -70,13 +70,22 @@ class DuelingDQN(nn.Module):
         return q_values
 
 class DQNAgent:
-    def __init__(self, state_dim, action_dim, lr=0.0001, gamma=0.95, use_dueling=True):
+    def __init__(self, state_dim, action_dim, lr=0.0001, gamma=0.95, 
+                 use_dueling=True, use_target_network=True, use_replay_memory=True):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.use_dueling = use_dueling
+        self.use_target_network = use_target_network
+        self.use_replay_memory = use_replay_memory
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Agent Initialized! Model: {'Dueling DQN' if use_dueling else 'Standard DQN'}")
+        
+        config = []
+        if self.use_dueling: config.append("Dueling")
+        else: config.append("Standard")
+        if not self.use_target_network: config.append("NoTarget")
+        if not self.use_replay_memory: config.append("NoReplay")
+        print(f"Agent Initialized: {'-'.join(config)}")
         
         if self.use_dueling:
             self.policy_net = DuelingDQN(state_dim, action_dim).to(self.device)
@@ -84,16 +93,24 @@ class DQNAgent:
         else:
             self.policy_net = DQN(state_dim, action_dim).to(self.device)
             self.target_net = DQN(state_dim, action_dim).to(self.device)
-            
-        self.update_target_network()
-        self.target_net.eval()
+        
+        if self.use_target_network:
+            self.update_target_network()
+            self.target_net.eval()
+        else:
+            self.target_net = self.policy_net
         
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
-        self.memory = ReplayBuffer(50000)
+        
+        if self.use_replay_memory:
+            self.memory = ReplayBuffer(50000)
+        else:
+            self.memory = None
+            self.last_transition = None
+        
         self.batch_size = 128
         self.gamma = gamma
         
-        # Epsilon Settings
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
@@ -109,10 +126,15 @@ class DQNAgent:
                 return q_values.argmax().item()
 
     def learn(self):
-        if len(self.memory) < self.batch_size:
+        if not self.use_replay_memory or (self.use_replay_memory and len(self.memory) < self.batch_size):
             return
         
-        states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)
+        if self.use_replay_memory:
+            states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)
+        else:
+            if self.last_transition is None:
+                return
+            states, actions, rewards, next_states, dones = [self.last_transition[0]], [self.last_transition[1]], [self.last_transition[2]], [self.last_transition[3]], [self.last_transition[4]]
         
         states = np.stack(states)
         next_states = np.stack(next_states)
@@ -126,7 +148,11 @@ class DQNAgent:
         current_q_values = self.policy_net(states).gather(1, actions)
         
         with torch.no_grad():
-            next_q_values = self.target_net(next_states).max(1)[0].unsqueeze(1)
+            if self.use_target_network:
+                next_q_values = self.target_net(next_states).max(1)[0].unsqueeze(1)
+            else:
+                next_q_values = self.policy_net(next_states).max(1)[0].unsqueeze(1)
+            
             target_q_values = rewards + (self.gamma * next_q_values * (1 - dones))
         
         loss = nn.SmoothL1Loss()(current_q_values, target_q_values)
@@ -136,7 +162,8 @@ class DQNAgent:
         torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=1.0)
         self.optimizer.step()
         
-        self.update_target_network()
+        if self.use_target_network:
+            self.update_target_network()
 
     def update_target_network(self):
         tau = 0.005
@@ -148,6 +175,14 @@ class DQNAgent:
     
     def update_epsilon(self):
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+    
+    def store_transition(self, state, action, reward, next_state, done):
+        if self.use_replay_memory:
+            self.memory.push(state, action, reward, next_state, done)
+        else:
+            state = np.array(state).flatten()
+            next_state = np.array(next_state).flatten()
+            self.last_transition = (state, action, reward, next_state, done)
 
 class RoundRobinAgent:
     def __init__(self, num_servers=3):
