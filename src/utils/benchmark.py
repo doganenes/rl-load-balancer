@@ -1,8 +1,14 @@
 import pandas as pd
 import numpy as np
+import os
 
-my_data = pd.read_csv("csv/simulation_log.csv", encoding="utf-8")
-benchmark = pd.read_csv("csv/mendeley_data.csv", encoding="utf-8")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+simulation_log_path = os.path.join(base_dir, "csv", "simulation_log.csv")
+benchmark_path = os.path.join(base_dir, "csv", "mendeley_data.csv")
+output_path = os.path.join(base_dir, "csv", "benchmark_comparison.csv")
+
+my_data = pd.read_csv(simulation_log_path, encoding="utf-8")
+benchmark = pd.read_csv(benchmark_path, encoding="utf-8")
 
 my_servers = my_data[['Server1', 'Server2', 'Server3']]
 benchmark_servers = benchmark[['X1', 'X2', 'X3']]
@@ -37,7 +43,7 @@ comparison['Benchmark_X3'] = benchmark_closest[:,2]
 comparison['Distance'] = distances
 comparison['Similarity Percentage'] = similarity_percentage
 
-comparison.to_csv("csv/benchmark_comparison.csv", index=False)
+comparison.to_csv(output_path, index=False)
 
-print("Benchmark comparison completed! CSV was saved: benchmark_comparison.csv")
+print("Benchmark comparison completed! CSV was saved:", output_path)
 print(comparison.head())
