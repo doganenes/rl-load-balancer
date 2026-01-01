@@ -2,7 +2,7 @@
 ![Tech Stack](https://github.com/user-attachments/assets/2bd64c66-0398-46c3-bf03-f2b9d5d0438d)
 
 
-This project implements an autonomous Reinforcement Learning (RL) framework designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a **Markov Decision Process (MDP)**, the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
+This project implements an Reinforcement Learning (RL) based dynamic load balancing system, designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a **Markov Decision Process (MDP)**, the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
 
 ---
 
