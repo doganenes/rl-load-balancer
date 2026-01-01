@@ -1,4 +1,5 @@
 <img width="810" height="195" alt="Image" src="https://github.com/user-attachments/assets/bb9e353e-661e-4c41-9e2a-bac9bc4a22ea" />
+
 # RL-Based Dynamic Load Balancing in Distributed Systems
 
 This project implements an autonomous Reinforcement Learning (RL) framework designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a Markov Decision Process (MDP), the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
