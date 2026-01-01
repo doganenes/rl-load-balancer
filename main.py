@@ -2,26 +2,34 @@ import numpy as np
 import os
 import torch
 import matplotlib.pyplot as plt
-
+import logging
 from src.environment import LoadBalancerEnv
 from src.agents import DQNAgent
 
-
-LOG_DIR = "logs"
-os.makedirs(LOG_DIR, exist_ok=True)
-
-log_file = os.path.join(LOG_DIR, "train.log")
-
-def log_print(message):
-    print(message)
-    with open(log_file, "a", encoding="utf-8") as f:
-        f.write(message + "\n")
-
 def train():
+    """
+    Trains a DQN agent for load balancing across multiple servers.
+    Logs training progress, saves the trained model, and plots reward curves.
+    """
 
     LR = 0.001
     GAMMA = 0.95
     USE_DUELING = True
+
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    log_path = os.path.join("logs", "training_curve.log")
+
+    logging.basicConfig(
+        filename=log_path,
+        filemode="w",
+        level=logging.INFO,
+        format="%(asctime)s | %(message)s"
+    )
+
+    logging.info("Training started")
+    logging.info(f"LR={LR}, Gamma={GAMMA}, Dueling={USE_DUELING}")
 
     env = LoadBalancerEnv(num_servers=3)
     agent = DQNAgent(
@@ -36,9 +44,7 @@ def train():
     rewards_history = []
 
     model_label = "Dueling DQN" if USE_DUELING else "Standard DQN"
-    log_print(f"{model_label} Main Training Starting... (LR={LR}, Gamma={GAMMA})")
-    log_print(f"Log file: {log_file}")
-    log_print("-" * 60)
+    print(f"{model_label} Main Training Starting... (LR={LR}, Gamma={GAMMA})")
 
     for e in range(episodes):
         state, _ = env.reset()
@@ -60,19 +66,25 @@ def train():
         agent.update_epsilon()
         rewards_history.append(total_reward)
 
+        # ---- LOG PER EPISODE ----
+        logging.info(
+            f"Episode={e+1}, Reward={total_reward:.4f}, Epsilon={agent.epsilon:.4f}"
+        )
+
         if (e + 1) % 50 == 0:
-            log_print(
+            print(
                 f"Episode {e + 1}/{episodes} | "
                 f"Reward: {total_reward:.2f} | "
                 f"Epsilon: {agent.epsilon:.2f}"
             )
 
-    log_print("Training Completed!")
-    log_print("-" * 60)
+    print("Training Completed!")
+    logging.info("Training completed")
 
-    model_path = "dqn_load_balancer_6.pth"
+    model_path = "models/dqn_load_balancer.pth"
     torch.save(agent.policy_net.state_dict(), model_path)
-    log_print(f"Model saved: {model_path}")
+    print(f"Model saved: {model_path}")
+    logging.info(f"Model saved at {model_path}")
 
     if not os.path.exists("figures"):
         os.makedirs("figures")
@@ -82,13 +94,23 @@ def train():
         smoothed_rewards = np.convolve(
             rewards_history,
             np.ones(window) / window,
-            mode='valid'
+            mode="valid"
         )
     else:
         smoothed_rewards = rewards_history
 
+    for i, val in enumerate(smoothed_rewards):
+        logging.info(
+            f"MovingAvg_Episode={i + window}, Value={val:.4f}"
+        )
+
     plt.figure(figsize=(10, 6))
-    plt.plot(rewards_history, color='lightblue', alpha=0.4, label='Raw Rewards')
+    plt.plot(
+        rewards_history,
+        color='lightblue',
+        alpha=0.4,
+        label='Raw Rewards'
+    )
     plt.plot(
         np.arange(len(smoothed_rewards)) + window - 1,
         smoothed_rewards,
@@ -97,8 +119,10 @@ def train():
         label='Moving Avg'
     )
 
+    model_title = "Dueling DQN" if USE_DUELING else "Standard DQN"
+
     plt.title(
-        f'{model_label} Training Performance\n(LR: {LR}, Gamma: {GAMMA})',
+        f'{model_title} Training Performance\n(LR: {LR}, Gamma: {GAMMA})',
         fontsize=12,
         fontweight='bold'
     )
@@ -107,11 +131,12 @@ def train():
     plt.legend()
     plt.grid(True, alpha=0.3)
 
-    plot_path = os.path.join("figures", "training_curve_final_6.png")
+    plot_path = os.path.join("figures", "training_curve.png")
     plt.savefig(plot_path)
-    log_print(f"Training plot saved: {plot_path}")
-    plt.show()
+    print(f"Training plot saved: {plot_path}")
+    logging.info(f"Training curve saved at {plot_path}")
 
+    plt.show()
 
 if __name__ == "__main__":
     train()

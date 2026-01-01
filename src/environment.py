@@ -3,6 +3,15 @@ from gymnasium import spaces
 import numpy as np
 
 class LoadBalancerEnv(gym.Env):
+    """
+    Custom Gymnasium environment for simulating a load balancer with multiple servers.
+
+    - Observation: CPU load per server (array of floats in [0, 1]).
+    - Action: Choose a server to send incoming request to (Discrete).
+    - Reward: Encourages balanced loads; penalizes overloads.
+    - Traffic modes: 'low' or 'high', controlling request intensity.
+    - Processes load each step according to server processing rates.
+    """
     def __init__(self, num_servers=3, max_steps=100):
         super().__init__()
         self.num_servers = num_servers
@@ -17,12 +26,14 @@ class LoadBalancerEnv(gym.Env):
         self.processing_rate = np.array([0.10, 0.10, 0.10])
         
         self.state = np.zeros(num_servers)
+        
+        #Default mode
         self.set_traffic_mode("low")
 
     def set_traffic_mode(self, mode):
         if mode == "low":
-            self.min_load = 0.25
-            self.max_load = 0.35
+            self.min_load = 0.20
+            self.max_load = 0.30
 
         elif mode == "high":
             self.min_load = 0.30
@@ -42,7 +53,6 @@ class LoadBalancerEnv(gym.Env):
         incoming = np.random.uniform(self.min_load, self.max_load)
         self.state[action] += incoming
 
-        
         std_dev = np.std(self.state)
         base_reward = - (std_dev * 2.0)
         
@@ -52,17 +62,16 @@ class LoadBalancerEnv(gym.Env):
         if max_current_load > 0.8:
             risk_penalty = (max_current_load - 0.8) * 50.0
 
-        # Crash Kontrolü
         terminated = False
         
         if max_current_load > 1.0:
             total_reward = -50.0 
             terminated = True
-            self.state[action] = 1.0
+            self.state[action] = 1.0 
         else:
             total_reward = base_reward - risk_penalty
 
-       
+
         self.state = self.state - self.processing_rate
         self.state = np.maximum(0.0, self.state)
 

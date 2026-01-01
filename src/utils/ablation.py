@@ -8,6 +8,16 @@ import logging
 from src.environment import LoadBalancerEnv
 from src.agents import DQNAgent
 
+"""
+Performs an ablation study on a DQN-based load balancing agent.
+
+This provides:
+- Compares different DQN variants (Standard, Dueling, without target network, without replay memory).
+- Trains each variant in a LoadBalancer environment under specified traffic conditions.
+- Logs rewards and training progress.
+- Plots and saves smoothed reward curves for each experiment.
+"""
+
 os.makedirs("logs", exist_ok=True)
 logging.basicConfig(
     filename="logs/ablation_results.log",
@@ -24,6 +34,7 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
 
 def run_experiment(label, episodes, lr, gamma, use_dueling=True, use_target=True, use_replay=True, traffic_mode="low"):
+    # Runs a single training experiment with specified DQN configuration.
     logger.info(f"Starting: {label} | Traffic: {traffic_mode}")
     set_seed(42)
 
@@ -53,7 +64,8 @@ def run_experiment(label, episodes, lr, gamma, use_dueling=True, use_target=True
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
-            agent.store_transition(state, action, reward, next_state, done)            
+            agent.store_transition(state, action, reward, next_state, done)
+            
             agent.learn()
 
             state = next_state
@@ -70,6 +82,8 @@ def run_experiment(label, episodes, lr, gamma, use_dueling=True, use_target=True
     return rewards_history
 
 def plot_ablation_results(all_results, traffic_mode):
+    """Plots smoothed reward curves for multiple experiments."""
+
     plt.figure(figsize=(10, 6))
     window = 50
     
@@ -90,6 +104,7 @@ def plot_ablation_results(all_results, traffic_mode):
     plt.close()
 
 def run_ablation_study():
+    """Executes all ablation experiments and saves figures."""
     EPISODES = 800
     LR = 0.001    
     GAMMA = 0.99  
@@ -101,8 +116,8 @@ def run_ablation_study():
         {"label": "No Replay Memory", "dueling": True, "target": True, "replay": False, "color": "orange"}
     ]
 
-    for traffic_mode in ["low","high"]:
-        print(f"\nStarting {traffic_mode.upper()} Traffic Experiments")
+    for traffic_mode in ["high"]:
+        print(f"\n--- Starting {traffic_mode.upper()} Traffic Experiments ---")
         traffic_results = []
         
         for exp in experiments:

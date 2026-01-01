@@ -8,24 +8,34 @@ import os
 from src.environment import LoadBalancerEnv
 from src.agents import DQNAgent
 
+"""
+Simulates DQN-based load balancing and generates a GIF.
+Parameters:
+- traffic_mode (str): 'low' or 'high' traffic scenario.
+- filename (str): Path to save the generated GIF with using imageio.
+- steps (int, optional): Number of simulation steps.
+"""
+
+
 def create_single_gif_in_memory(traffic_mode, filename, steps=50):
-    print(f"Preparing simulation for '{traffic_mode.upper()}' traffic mode...")
+    print(f"\n🎥 Preparing simulation for '{traffic_mode.upper()}' traffic mode...")
     
     if not os.path.exists("logs"):
         os.makedirs("logs")
 
-    log_path = os.path.join("logs", f"visualize_{traffic_mode}_traffic4.log")
+    log_path = os.path.join("logs", f"visualize_{traffic_mode}_traffic44.log")
     log_file = open(log_path, "w", encoding="utf-8")
 
     log_file.write("Step\tServer1\tServer2\tServer3\tAction\n")
+
+    
     env = LoadBalancerEnv(num_servers=3)
-    
     env.set_traffic_mode(traffic_mode)
+    state_dim = env.observation_space.shape[0]
+    agent = DQNAgent(state_dim=state_dim, action_dim=3, use_dueling=True)
     
-    real_state_dim = env.observation_space.shape[0]
-    agent = DQNAgent(state_dim=real_state_dim, action_dim=3, use_dueling=True)
-    
-    model_path = "models/dqn_load_balancer_11.pth"
+    # Load pre-trained model
+    model_path = "models/dqn_load_balancer.pth"
     
     if os.path.exists(model_path):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,6 +57,7 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
         action = agent.select_action(state)
         next_state, reward, _, _, _ = env.step(action)
         
+
         for i in range(3):
             val = state[i]
             server_loads[i].append(val)
@@ -98,6 +109,7 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
         frames.append(imageio.imread(buf))
         state = next_state
 
+    # Save GIF
     imageio.mimsave(filename, frames, duration=0.5, loop=0)
     print(f"Saved GIF: {filename}")
 
@@ -110,7 +122,8 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
     s2_avg = np.mean(server_loads[1])
     s3_avg = np.mean(server_loads[2])
 
-    log_file.write("Summary Stats:\n")
+    # -------- STATS LOG --------
+    log_file.write("\n--- SUMMARY STATS ---\n")
     log_file.write(f"Global Max Load: {global_max:.6f}\n")
     log_file.write(f"Global Min Load: {global_min:.6f}\n")
     log_file.write(f"Global Avg Load: {global_avg:.6f}\n")
@@ -118,28 +131,31 @@ def create_single_gif_in_memory(traffic_mode, filename, steps=50):
     log_file.write(f"Server1 Avg: {s1_avg:.6f} | Requests: {requests_per_server[0]}\n")
     log_file.write(f"Server2 Avg: {s2_avg:.6f} | Requests: {requests_per_server[1]}\n")
     log_file.write(f"Server3 Avg: {s3_avg:.6f} | Requests: {requests_per_server[2]}\n")
+    # --------------------------
+
     log_file.close()
     print(f"Logs saved to: {log_path}")
-
-    print(f"Stats for {traffic_mode.upper()} Traffic")
+    print(f"\n--- STATS FOR {traffic_mode.upper()} TRAFFIC (For Report Table) ---")
     print(f"Global Max Load:      {global_max:.4f}")
     print(f"Global Min Load:      {global_min:.4f}")
     print(f"Global Average Load:  {global_avg:.4f}")
     print(f"Fairness (Std Dev):   {global_std:.4f}")
+    print("-" * 45)
     print("Server Load Distribution:")
     print(f"  Server 1 -> Avg: {s1_avg:.4f} | Requests: {requests_per_server[0]}")
     print(f"  Server 2 -> Avg: {s2_avg:.4f} | Requests: {requests_per_server[1]}")
     print(f"  Server 3 -> Avg: {s3_avg:.4f} | Requests: {requests_per_server[2]}")
+    print("====================================================\n")
 
 if __name__ == "__main__":
     if not os.path.exists("figures"):
         os.makedirs("figures")
         print("figures folder created.")
 
-    path_low = os.path.join("figures", "simulation_low_traffic2.gif")
-    path_high = os.path.join("figures", "simulation_high_traffic2.gif")
+    path_low = os.path.join("figures", "simulation_low_traffic.gif")
+    path_high = os.path.join("figures", "simulation_high_traffic.gif")
 
     create_single_gif_in_memory('low', path_low, steps=100)
     create_single_gif_in_memory('high', path_high, steps=100)
 
-    print("\nGIFs generated inside 'figures' folder.")
+    print("\nPROCESS COMPLETED! GIFs generated inside 'figures' folder.")

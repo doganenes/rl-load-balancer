@@ -123,8 +123,8 @@ def evaluate_architectures():
 
     logger.info("Architecture Comparison Started")
 
-    COMMON_LR = 0.0001
-    COMMON_GAMMA = 0.95
+    COMMON_LR = 0.001
+    COMMON_GAMMA = 0.99
 
     duel_rewards = run_experiment(
         use_dueling=True,
@@ -169,7 +169,7 @@ def evaluate_architectures():
     ax.legend(loc='lower right', fontsize=12, frameon=True, shadow=True)
     ax.grid(True, alpha=0.3, linestyle='--')
 
-    filename = 'compare_final_matched115.png'
+    filename = 'compare_final_matched.png'
     save_path = os.path.join("figures", filename)
 
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
