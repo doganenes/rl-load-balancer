@@ -1,12 +1,19 @@
-<img width="810" height="195" alt="Image" src="https://github.com/user-attachments/assets/bb9e353e-661e-4c41-9e2a-bac9bc4a22ea" />
-
 # RL-Based Dynamic Load Balancing in Distributed Systems
+![Tech Stack](https://github.com/user-attachments/assets/2bd64c66-0398-46c3-bf03-f2b9d5d0438d)
 
-This project implements an autonomous Reinforcement Learning (RL) framework designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a Markov Decision Process (MDP), the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
+
+This project implements an autonomous Reinforcement Learning (RL) framework designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a **Markov Decision Process (MDP)**, the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
+
+---
 
 ## System Methodology
+
 The core of the project is the interaction between a central RL Agent and a simulated cluster environment developed using the `Gymnasium` library.
-### RL Architectures
+
+### Architecture
+
+![System Architecture](https://github.com/user-attachments/assets/0a530344-b279-40b7-ae0f-5f620b7c9cfe)
+
 The project evaluates two primary neural network-based RL architectures:
 
 - **Standard DQN**  
@@ -14,23 +21,64 @@ The project evaluates two primary neural network-based RL architectures:
 
 - **Dueling DQN**  
   Decouples the State Value $V(s)$ from the Action Advantage $A(s,a)$, allowing the agent to identify high-risk states regardless of the specific routing decision.
-<img width="797" height="323" alt="Image" src="https://github.com/user-attachments/assets/0a530344-b279-40b7-ae0f-5f620b7c9cfe" />
+
+---
 
 ## Architecture Performance Comparison
+
 The Standard DQN and Dueling DQN were compared head-to-head under identical conditions following hyperparameter optimization to verify architectural superiority.
+
 ### 1. Steady-State Comparison (Low Traffic)
-<img width="598" height="401" alt="Image" src="https://github.com/user-attachments/assets/939d1411-d060-43a7-ab09-925a5a97ed8b" />
-Analysis: When system demand matches processing capacity, both agents converge to a stable operating regime with nearly identical performance.
+![Architecture Comparision under Low Traffic](https://github.com/user-attachments/assets/db6811f7-5d96-4211-bbd7-a70fcf0a9c66)
+
+
+**Analysis:** When system demand matches processing capacity, both agents converge to a stable operating regime with nearly identical performance.
 
 ### 2. Over-Saturation Comparison (High Traffic)
-<img width="601" height="402" alt="Image" src="https://github.com/user-attachments/assets/27edd678-b494-48af-af0d-c48762661d4c" />
-Analysis: The Standard DQN exhibits noticeable instability due to overestimation bias. In contrast, the Dueling DQN maintains a significantly more stable and robust response despite persistent overload.
+![Architecture Comparision under High Traffic](https://github.com/user-attachments/assets/8392ef79-ec5c-4d51-ac47-8dafe39cbb38)
 
+**Analysis:** The Standard DQN exhibits noticeable instability due to overestimation bias. In contrast, the Dueling DQN maintains a significantly more stable and robust response despite persistent overload.
+
+---
+
+## Project Structure
+
+- **src/environment.py**  
+  A custom Gymnasium environment that simulates a 3-server cluster, managing state transitions based on server processing rates and traffic modes (Low/High).
+
+- **src/agents.py**  
+  Implementation of the Reinforcement Learning agents, including the Standard DQN and Dueling DQN neural network architectures, as well as baseline heuristics such as Round Robin and Least Connections.
+
+- **main.py**  
+  The primary script for training the Dueling DQN agent, handling the training loop, model saving, and generating reward history plots.
+
+- **tune.py**  
+  A high-performance multiprocessing script used to parallelize a grid search over learning rates and discount factors to identify optimal hyperparameters.
+
+- **compare.py**  
+  A specialized script for performing head-to-head performance comparisons between Standard and Dueling architectures under identical high-traffic conditions.
+
+- **ablation.py**  
+  A diagnostic script that performs an ablation study by systematically disabling core components like the Target Network or Replay Memory to quantify their impact on training stability.
+
+- **test.py**  
+  A comprehensive stress test script that evaluates trained agents against traditional baselines using metrics like average load, load standard deviation (fairness), and P99 load.
+
+- **visualize.py**  
+  A simulation utility that produces real-time load distribution GIFs and step-by-step visualizations of server CPU utilization.
+
+- **benchmark.py**  
+  A validation tool that calculates Euclidean distance and similarity percentages to compare simulation telemetry against Mendeley Data industrial benchmark traces.
+
+---
 
 ## Experimental Results
+
 ### 1. Hyperparameter Optimization
+
 A parallelized grid search was conducted using multiprocessing to identify the most stable RL parameters.  
 The results identified $\alpha = 0.001$ and $\gamma = 0.99$ as the optimal configuration for high-traffic stability.
+
 | Rank | Learning Rate | Gamma | Architecture  | Average Reward |
 |------|---------------|-------|---------------|----------------|
 | 1    | 0.001         | 0.99  | Dueling DQN   | -62.98         |
@@ -52,44 +100,40 @@ The results identified $\alpha = 0.001$ and $\gamma = 0.99$ as the optimal confi
 | 17   | 0.001         | 0.95  | Standard DQN  | -82.22         |
 | 18   | 0.0001        | 0.95  | Dueling DQN   | -86.12         |
 
-### 2. Ablation Study: Stability Analysis
-We evaluated the necessity of RL stabilization mechanisms—specifically **Experience Replay** and **Target Networks with soft updates** ($\tau = 0.005$).  
-The ablation study was conducted across two traffic regimes to isolate the impact of each component.
+---
 
-#### Low Traffic Stability
-<img width="1000" height="600" alt="Image" src="https://github.com/user-attachments/assets/36959f6c-3cde-4b0b-b7bb-0f58084725ee" />
-Under low-load conditions, all architectures except **No Replay Memory** exhibited relatively stable convergence.  
-This suggests that when system resources are abundant, the decoupling advantage of the Dueling architecture is less pronounced.  
+### 2. Stress Test Evaluation
 
-
-#### High Traffic Robustness
-The true value of the **Dueling DQN** and stabilization components was unveiled during high-stress scenarios (116% saturation).  
-Without **Experience Replay Memory** (orange line), the agent failed to break temporal correlations, leading to complete training stagnation.  
-<img width="1000" height="600" alt="Image" src="https://github.com/user-attachments/assets/38992bab-0a8d-42d8-9aa9-6a0854fbe558" />
-
-### 3. Stress Test Evaluation
 The trained RL policy was compared against industry-standard heuristics: **Least Connections** and **Round Robin**.
-<img width="1800" height="600" alt="Image" src="https://github.com/user-attachments/assets/a72839b3-1295-41a6-a7eb-460588cc61a6" />
-Under high traffic, the RL agent maintains superior fairness (0.237 Std Dev) and minimizes P99 latency compared to static baselines.
 
-### 4. Real-World Validation
+![Stress Test](https://github.com/user-attachments/assets/a72839b3-1295-41a6-a7eb-460588cc61a6)
+
+**Analysis:** Under high traffic, the RL agent maintains superior fairness (0.237 Std Dev) and minimizes P99 latency compared to static baselines.
+
+---
+
+### 3. Real-World Validation
+
 To ensure the simulation's realism, the server load vectors generated by the RL agent were compared against **Mendeley Data workload traces**.
+
 | Metric             | Similarity (%) |
 |-------------------|----------------|
 | Mean (Average)     | 90.21          |
 | Standard Deviation | 5.42           |
 | Min. Similarity    | 76.60          |
 | Max. Similarity    | 98.45          |
-Result: The agent's learned policy achieved a 90.21% mean similarity with real-world server states.
 
-## Project Structure
-- **src/environment.py**  
-  Custom Gymnasium environment for the 3-server cluster.
-- **src/agents.py**  
-  Implementation of Standard and Dueling DQN RL agents.
-- **tune2.py**  
-  Multiprocessing script for parallel hyperparameter search.
-- **visualize2.py**  
-  Simulation visualizer producing real-time load distribution GIFs.
-- **benchmark.py**  
-  Script for calculating similarity metrics against Mendeley Data.
+**Result:** The agent's learned policy achieved a 90.21% mean similarity with real-world server states.
+
+---
+
+### 4. Real-Time Load Visualization
+
+The following visualizations illustrate the agent's routing behavior at the system level during the testing phase.  
+These were generated using **ImageIO** to capture real-time load distributions.
+
+![Low Traffic Routing](https://github.com/user-attachments/assets/2c014aa8-9c79-4777-a699-baf8c98a8035)  
+*Figure: RL agent routing behavior under low traffic.*
+
+![High Traffic Routing](https://github.com/user-attachments/assets/e10959b7-e343-4c3d-98cd-43bce6509be6)  
+*Figure: RL agent routing behavior under high traffic.*
