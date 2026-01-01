@@ -13,7 +13,6 @@ env/
 *.jpg
 *.gif
 *.jpeg
-*.csv
 results/
 *.pth
 *.pt
