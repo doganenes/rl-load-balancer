@@ -1,12 +1,17 @@
 # RL-Based Dynamic Load Balancing in Distributed Systems
 ![Tech Stack](https://github.com/user-attachments/assets/2bd64c66-0398-46c3-bf03-f2b9d5d0438d)
 
-
-This project implements an Reinforcement Learning (RL) based dynamic load balancing system, designed to optimize workload distribution across a three-server cluster. By modeling the load balancing problem as a **Markov Decision Process (MDP)**, the system learns an adaptive policy that responds to real-time traffic fluctuations and resource saturation.
+This project implements an adaptive load balancing system designed to
+optimize workload distribution across a multi-server environment through
+simulation-based traffic scenarios.
 
 ---
 
 ## System Methodology
+
+The load balancing strategy is learned using Reinforcement Learning, where
+the problem is modeled as a Markov Decision Process (MDP) to adapt routing
+decisions based on observed system states and workload patterns.
 
 The core of the project is the interaction between a central RL Agent and a simulated cluster environment developed using the `Gymnasium` library.
 
