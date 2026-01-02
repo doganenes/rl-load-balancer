@@ -18,7 +18,7 @@ Parameters:
 
 
 def create_single_gif_in_memory(traffic_mode, filename, steps=50):
-    print(f"\n🎥 Preparing simulation for '{traffic_mode.upper()}' traffic mode...")
+    print(f"\nSimulation for '{traffic_mode.upper()}' traffic mode...")
     
     if not os.path.exists("logs"):
         os.makedirs("logs")
